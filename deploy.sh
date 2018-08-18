@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-NAME=ustc_igem_api
-MIGRATE_NAME=ustc_igem_api_migrate
-IMAGE_NAME=ustc_igem_api
+NAME=biohub_api
+MIGRATE_NAME=biohub_api_migrate
+IMAGE_NAME=biohub_api
 APP_DIR=$(cd `dirname $0`; pwd)/app
 
 # migrate
