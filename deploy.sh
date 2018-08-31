@@ -2,7 +2,7 @@
 NAME=biohub_api
 MIGRATE_NAME=biohub_api_migrate
 IMAGE_NAME=biohub_api
-APP_DIR=$(cd `dirname $0`; pwd)/app
+APP_DIR=$(cd `dirname $0`; pwd)/biohub
 
 # migrate
 docker stop ${MIGRATE_NAME} && docker rm ${MIGRATE_NAME}
