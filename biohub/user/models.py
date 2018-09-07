@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
+import re
 
 
 # Create your models here.
@@ -28,10 +29,29 @@ class User(AbstractUser):
                                        blank=True)
 
     # being praised by
-    praises = models.ManyToManyField(settings.AUTH_USER_MODEL, symmetrical=False, related_name='favourites')
+    # praises = models.ManyToManyField(settings.AUTH_USER_MODEL, symmetrical=False, related_name='favourites')
 
     reports = models.ManyToManyField('report', symmetrical=False, related_name='authors')
 
     collections = models.ManyToManyField('report', symmetrical=False, related_name='collected_by')
 
+    # report.praises is the persons that praise the report
+    favourites = models.ManyToManyField('report', related_name='praises')
+
+    # first name and last name save
+    def save(self, *args, **kwargs):
+
+        zh_pattern = re.compile(u'[\u4e00-\u9fa5]+')
+        name = self.actualname
+        match = zh_pattern.search(name, 0)
+
+        if match:
+            self.last_name = match.group()[0]
+            self.first_name = match.group()[1:]
+        else:
+            name_list = name.split(' ')
+            self.first_name = name_list[0]
+            self.last_name = name_list[-1]
+
+        super(User, self).save(*args, **kwargs)
 

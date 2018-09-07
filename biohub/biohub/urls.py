@@ -17,11 +17,19 @@ from django.contrib import admin
 from django.urls import path
 from django.conf.urls import url, include
 from rest_framework.routers import DefaultRouter
+from django.conf import settings
+from django.conf.urls.static import static
 
 router = DefaultRouter()
 
+# differnt apps' urls separate with space.
 urlpatterns = [
     path('admin/', admin.site.urls),
     url(r'^api/', include(router.urls)),
-    url(r'^api-auth/', include('rest_framework.urls'))
+    url(r'^api-auth/', include('rest_framework.urls')),
+
 ]
+
+# 部署的时候需要指定static_url 和 media_url
+urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
