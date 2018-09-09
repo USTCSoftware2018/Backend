@@ -1,7 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
+
 import re
+from report.models import Report
 
 
 # Create your models here.
@@ -28,15 +30,12 @@ class User(AbstractUser):
     followers = models.ManyToManyField(settings.AUTH_USER_MODEL, symmetrical=False, related_name='following', null=True,
                                        blank=True)
 
-    # being praised by
-    # praises = models.ManyToManyField(settings.AUTH_USER_MODEL, symmetrical=False, related_name='favourites')
+    reports = models.ManyToManyField(Report, symmetrical=False, related_name='authors')
 
-    reports = models.ManyToManyField('report', symmetrical=False, related_name='authors')
-
-    collections = models.ManyToManyField('report', symmetrical=False, related_name='collected_by')
+    collections = models.ManyToManyField(Report, symmetrical=False, related_name='collected_by')
 
     # report.praises is the persons that praise the report
-    favourites = models.ManyToManyField('report', related_name='praises')
+    favourites = models.ManyToManyField(Report, related_name='praises')
 
     # first name and last name save
     def save(self, *args, **kwargs):

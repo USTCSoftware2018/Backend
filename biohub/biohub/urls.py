@@ -28,6 +28,7 @@ urlpatterns = [
     url(r'^api/', include(router.urls)),
     url(r'^api-auth/', include('rest_framework.urls')),
 
+
 ]
 
 # 部署的时候需要指定static_url 和 media_url
