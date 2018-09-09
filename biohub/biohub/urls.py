@@ -19,6 +19,7 @@ from django.conf.urls import url, include
 from rest_framework.routers import DefaultRouter
 from django.conf import settings
 from django.conf.urls.static import static
+import user.views as user_views
 
 router = DefaultRouter()
 
@@ -28,7 +29,8 @@ urlpatterns = [
     url(r'^api/', include(router.urls)),
     url(r'^api-auth/', include('rest_framework.urls')),
 
-
+    # user's routing
+    path('users/', user_views.get_users, name='get_users')
 ]
 
 # 部署的时候需要指定static_url 和 media_url
