@@ -251,5 +251,7 @@ tags
 # Persistent undo
 [._]*.un~
 
+# zh defined
+git.sh
 
 # End of https://www.gitignore.io/api/vim,macos,python,django,pycharm
