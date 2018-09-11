@@ -30,7 +30,7 @@ urlpatterns = [
     url(r'^api-auth/', include('rest_framework.urls')),
 
     # user's routing
-    path('users/', user_views.get_users, name='get_users')
+    path('users/<int:id>/', user_views.get_users, name='get_users')
 ]
 
 # 部署的时候需要指定static_url 和 media_url
