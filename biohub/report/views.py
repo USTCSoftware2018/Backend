@@ -7,6 +7,7 @@ import json
 from django.utils import timezone
 from .models import Graph
 from user.models import User
+from django.core import serializers
 
 # Create your views here.
 
@@ -82,6 +83,8 @@ def post_picture(request):
 
 
 def get_steps(request):
-    user = request.user
+    user = User.objects.get(pk=request.user.pk)
+    steps = user.steps.all()
+    data = serializers.serialize('json', list(steps), fields=('fileName', 'id'))
 
 

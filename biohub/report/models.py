@@ -9,11 +9,15 @@ from django.http import HttpResponse
 class Report(models.Model):
 
     title = models.CharField(max_length=256)
+    # author = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='reports')
     abstract = models.TextField()
     labels = models.ManyToManyField('Label', related_name='reports_related')
     pub_time = models.DateTimeField(auto_now_add=True)
     latest_edit_time = models.DateTimeField(auto_now=True)
+
     subrouting_json = models.ManyToManyField('SubRoutineJson')
+    templates = models.TextField()
+    text = models.TextField()
 
     # See comments in Comment model!
     # See praises(likes in the doc) in User model
@@ -63,9 +67,9 @@ class Component(models.Model):
     name = models.CharField(max_length=64)
     description = models.TextField()
     template = models.TextField()
-    users = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='collected_steps')
-    created_user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='created_steps', on_delete=models.CASCADE)
-    default = models.TextField(default='', null=True, blank=True)
+    # users = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='collected_steps')
+    # created_user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='created_steps', on_delete=models.CASCADE)
+    # default = models.TextField(default='', null=True, blank=True)
 
     def __str__(self):
         return 'id:{}, name: {}'.format(self.pk, self.name)
@@ -89,32 +93,62 @@ class SubRoutine(models.Model):
         (TABLE, 'Table'),
     )
     rt_type = models.CharField(max_length=2, choices=rt_type_choices, null=False, blank=False)
-    main_subuoutine = models.ManyToManyField('MainSubRoutine')
-    result_subroutine = models.ManyToManyField('ResultSubRoutine')
+    content_json = models.TextField()
+
+    def save(self, *args, **kwargs):
+        try:
+            subroutine = json.loads(self.content_json)
+
+            if subroutine.idx:
+                self.order = subroutine.idx
+            else:
+                err_msg = {
+                    'meta': {
+                        'success': False,
+                        'message': 'Idx Does Not Exist',
+                    },
+                    'data': self.content_json
+                }
+                return HttpResponse(json.dumps(err_msg))
+
+            return super(SubRoutine, self).save(*args, **kwargs)
+
+        except json.decoder.JSONDecodeError:
+            err_msg = {
+                'meta': {
+                    'success': False,
+                    'message': 'Json Decode Error',
+                },
+                'data': self.content_json
+            }
+            return HttpResponse(json.dumps(err_msg))
+
+    # main_subuoutine = models.ManyToManyField('MainSubRoutine')
+    # result_subroutine = models.ManyToManyField('ResultSubRoutine')
     #########################
 
 
-class BaseSubRoutine(models.Model):
-    step_num = models.IntegerField()
-    icon = models.URLField()
-    name = models.CharField(max_length=64)
-    description = models.TextField()
-
-    def __str__(self):
-        return 'id:{}, name:{}'.format(self.pk, self.name)
+# class BaseSubRoutine(models.Model):
+#     step_num = models.IntegerField()
+#     icon = models.URLField()
+#     name = models.CharField(max_length=64)
+#     description = models.TextField()
+#
+#     def __str__(self):
+#         return 'id:{}, name:{}'.format(self.pk, self.name)
 
 
 # MainSubRoutine
-class MainSubRoutine(BaseSubRoutine):
-    data = models.ManyToManyField(Component, through='SubroutingComponent')
-
-    def data_list(self):
-        return [sc.component for sc in SubroutingComponent.objects.filter(sub_routine=self).order_by('order')]
+# class MainSubRoutine(BaseSubRoutine):
+#     data = models.ManyToManyField(Component, through='SubroutingComponent')
+#
+#     def data_list(self):
+#         return [sc.component for sc in SubroutingComponent.objects.filter(sub_routine=self).order_by('order')]
 
 
 class SubroutingComponent(models.Model):
     component = models.ForeignKey(Component, on_delete=models.CASCADE)
-    sub_routine = models.ForeignKey(MainSubRoutine, on_delete=models.CASCADE, db_index=True)
+    sub_routine = models.ForeignKey(SubRoutine, on_delete=models.CASCADE, db_index=True)
     component_default_json = models.TextField()
     order = models.IntegerField()
 
@@ -126,8 +160,8 @@ class SubroutingComponent(models.Model):
 
 
 # ResultSubRoutine
-class ResultSubRoutine(BaseSubRoutine):
-    Result = models.TextField()
+# class ResultSubRoutine(BaseSubRoutine):
+#     Result = models.TextField()
 
 
 ###########################################################################################################
@@ -135,7 +169,8 @@ class ResultSubRoutine(BaseSubRoutine):
 class SubRoutineJson(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='subroutings', on_delete=models.CASCADE)
     content_json = models.TextField()
-    order = models.IntegerField()
+    components = models.ManyToManyField('ComponentJson', related_name='subroutines')
+    # order = models.IntegerField()
 
     def save(self, *args, **kwargs):
         try:
@@ -169,7 +204,7 @@ class SubRoutineJson(models.Model):
 class ComponentJson(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='steps', on_delete=models.CASCADE)
     content_json = models.TextField()
-    order = models.IntegerField()
+    # order = models.IntegerField()
 
     def save(self, *args, **kwargs):
         try:
@@ -197,4 +232,5 @@ class ComponentJson(models.Model):
                 'data': self.content_json
             }
             return HttpResponse(json.dumps(err_msg))
+
 
