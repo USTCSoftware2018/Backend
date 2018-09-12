@@ -27,8 +27,7 @@ class User(AbstractUser):
     # being followed by
     # find following persons, use Alice.following.all()
     # find followers, use Bob.followers.all()
-    followers = models.ManyToManyField(settings.AUTH_USER_MODEL, symmetrical=False, related_name='following', null=True,
-                                       blank=True)
+    followers = models.ManyToManyField(settings.AUTH_USER_MODEL, symmetrical=False, related_name='following', blank=True)
 
     reports = models.ManyToManyField(Report, symmetrical=False, related_name='authors')
 
@@ -53,4 +52,3 @@ class User(AbstractUser):
             self.last_name = name_list[-1]
 
         super(User, self).save(*args, **kwargs)
-

@@ -1,5 +1,7 @@
 from django.db import models
 from django.conf import settings
+import json
+from django.http import HttpResponse
 # Create your models here.
 
 
@@ -10,6 +12,7 @@ class Report(models.Model):
     labels = models.ManyToManyField('Label', related_name='reports_related')
     pub_time = models.DateTimeField(auto_now_add=True)
     latest_edit_time = models.DateTimeField(auto_now=True)
+    subrouting_json = models.ManyToManyField('SubRoutineJson')
 
     # See comments in Comment model!
     # See praises(likes in the doc) in User model
@@ -26,6 +29,7 @@ class Label(models.Model):
 
 
 class Graph(models.Model):
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='report_graphs')
     graph = models.ImageField(upload_to='report_graph', null=True, blank=True)
 
 
@@ -50,6 +54,8 @@ class CommentReply(Comment):
                                       related_name='sub_comments')
 
 
+#####################################################################################################################
+# Without using json
 # Edit process
 class Component(models.Model):
     icon = models.URLField()
@@ -82,7 +88,9 @@ class SubRoutine(models.Model):
         (TABLE, 'Table'),
     )
     rt_type = models.CharField(max_length=2, choices=rt_type_choices, null=False, blank=False)
-    ##########################
+    main_subuoutine = models.ManyToManyField('MainSubRoutine')
+    result_subroutine = models.ManyToManyField('ResultSubRoutine')
+    #########################
 
 
 class BaseSubRoutine(models.Model):
@@ -120,5 +128,70 @@ class SubroutingComponent(models.Model):
 class ResultSubRoutine(BaseSubRoutine):
     Result = models.TextField()
 
-# 写各类subroutine 包括67行的所有
+
+###########################################################################################################
+# Using json
+class SubRoutineJson(models.Model):
+    content_json = models.TextField()
+    order = models.IntegerField()
+
+    def save(self, *args, **kwargs):
+        try:
+            subroutine = json.loads(self.content_json)
+
+            if subroutine.idx:
+                self.order = subroutine.idx
+            else:
+                err_msg = {
+                    'meta': {
+                        'success': False,
+                        'message': 'Idx Does Not Exist',
+                    },
+                    'data': self.content_json
+                }
+                return HttpResponse(json.dumps(err_msg))
+
+            return super(SubRoutineJson, self).save(*args, **kwargs)
+
+        except json.decoder.JSONDecodeError:
+            err_msg = {
+                'meta': {
+                    'success': False,
+                    'message': 'Json Decode Error',
+                },
+                'data': self.content_json
+            }
+            return HttpResponse(json.dumps(err_msg))
+
+
+class ComponentJson(models.Model):
+    content_json = models.TextField()
+    order = models.IntegerField()
+
+    def save(self, *args, **kwargs):
+        try:
+            component = json.loads(self.content_json)
+            if component.order:
+                self.order = component.idx  # order单独存储
+            else:
+                err_msg = {
+                    'meta': {
+                        'success': False,
+                        'message': 'Idx Does Not Exist',
+                    },
+                    'data': self.content_json
+                }
+                return HttpResponse(json.dumps(err_msg))
+
+            return super(ComponentJson, self).save(*args, **kwargs)
+
+        except json.decoder.JSONDecodeError:
+            err_msg = {
+                'meta': {
+                    'success': False,
+                    'message': 'Json Decode Error',
+                },
+                'data': self.content_json
+            }
+            return HttpResponse(json.dumps(err_msg))
 

@@ -20,6 +20,7 @@ from rest_framework.routers import DefaultRouter
 from django.conf import settings
 from django.conf.urls.static import static
 import user.views as user_views
+import report.views as report_views
 
 router = DefaultRouter()
 
@@ -30,7 +31,10 @@ urlpatterns = [
     url(r'^api-auth/', include('rest_framework.urls')),
 
     # user's routing
-    path('users/<int:id>/', user_views.get_users, name='get_users')
+    # path('users/<int:id>/', user_views.get_users, name='get_users'),
+
+    # report's routing
+    path('pic/', report_views.post_picture, name='post_picture'),
 ]
 
 # 部署的时候需要指定static_url 和 media_url
