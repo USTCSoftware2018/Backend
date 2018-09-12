@@ -13,8 +13,8 @@ from user.models import User
 
 def post_picture(request):
     if request.method == 'POST' or 'OPTIONS':
-        user_pk = request.user.pk
-        user = User.objects.get(pk=user_pk)
+        user = request.user
+        # user = User.objects.get(pk=user_pk)
         uidb64 = bytes.decode(urlsafe_base64_encode(force_bytes(user.pk)))
         if user and user.is_active:
             try:
@@ -79,5 +79,9 @@ def post_picture(request):
         response = HttpResponse(content_type="application/json")
         response.write(json.dumps(err_msg))
         return response
+
+
+def get_steps(request):
+    user = request.user
 
 

@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 import json
 from django.http import HttpResponse
+# from django.contrib.auth.models import AnonymousUser
 # Create your models here.
 
 
@@ -132,6 +133,7 @@ class ResultSubRoutine(BaseSubRoutine):
 ###########################################################################################################
 # Using json
 class SubRoutineJson(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='subroutings', on_delete=models.CASCADE)
     content_json = models.TextField()
     order = models.IntegerField()
 
@@ -165,6 +167,7 @@ class SubRoutineJson(models.Model):
 
 
 class ComponentJson(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='steps', on_delete=models.CASCADE)
     content_json = models.TextField()
     order = models.IntegerField()
 
