@@ -6,13 +6,13 @@ report = {
     'introduction': 'A Fucking Report You Will Never Accomplish',
     'subr': [
         {
-            type1
+            'type1'
         },
         {
-            type2
+            'type2'
         },
         {
-            steps
+            'steps'
         }
     ]
 }

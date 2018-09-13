@@ -87,7 +87,7 @@ def get_steps(request, report_id):
     user = User.objects.get(pk=request.user.pk)
     report = Report.objects.get(pk=report_id)
     if user and user in report.authors.all():
-        template = json.loads(report.templates)
-        subroutine = map(lambda template: template.subroutine)
+        subroutines = json.loads(report.subroutines)
+        steps = map(lambda sbr: sbr.steps, subroutines)
         # report_step =
 
