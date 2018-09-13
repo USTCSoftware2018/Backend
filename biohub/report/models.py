@@ -9,9 +9,9 @@ from django.http import HttpResponse
 class Report(models.Model):
 
     title = models.CharField(max_length=256)
-    # authors
-    abstract = models.TextField()
-    labels = models.ManyToManyField('Label', related_name='reports_related')
+    # authors <-- user.User.reports
+    introduction = models.TextField()
+    label = models.ManyToManyField('Label', related_name='reports_related')
     ntime = models.DateTimeField(auto_now_add=True)
     mtime = models.DateTimeField(auto_now=True)
     result = models.TextField()
