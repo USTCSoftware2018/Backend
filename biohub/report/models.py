@@ -171,6 +171,7 @@ class CommentReply(Comment):
 class Step(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='steps', on_delete=models.CASCADE)
     content_json = models.TextField()
+    yield_method = models.TextField()
     # icon = models.URLField()
     # name = models.CharField(max_length=64)
     # description = models.TextField()
@@ -186,6 +187,7 @@ class Step(models.Model):
 class SubRoutine(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='subroutines', on_delete=models.CASCADE)
     content_json = models.TextField()
+    yield_method = models.TextField()
 
     def __str__(self):
         return 'id:{}'.format(self.pk)

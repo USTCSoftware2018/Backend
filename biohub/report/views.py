@@ -1,4 +1,5 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.urls import reverse
 from django.http import HttpResponse
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_text
@@ -7,8 +8,10 @@ import json
 from django.utils import timezone
 from .models import Graph
 from user.models import User
-from.models import Report
+from.models import Report, Comment, CommentReply
+from django.contrib import auth
 from django.core import serializers
+
 
 # Create your views here.
 
@@ -83,11 +86,77 @@ def post_picture(request):
         return response
 
 
-def get_steps(request, report_id):
-    user = User.objects.get(pk=request.user.pk)
-    report = Report.objects.get(pk=report_id)
-    if user and user in report.authors.all():
-        subroutines = json.loads(report.subroutines)
-        steps = map(lambda sbr: sbr.steps, subroutines)
-        # report_step =
+def comment_post(request):
+    if request.method == 'POST':
+        comment_json = request.POST.get('comment', '')
+        comment = json.loads(comment_json)
+        report_pk = comment['to_report']
+        report = Report.objects.get(pk=report_pk)
+        user = request.user
+        message = comment['message']  # message
+        to_comment = comment['to_comment']  # comment_pk
+        # to_comment = json.loads(to_comment)
+
+        if user is not None and user.is_active:
+            # if user.email_status is Trgit ue:
+            # auth.login(request, user)
+
+            # user.login_times += 1
+            # user.save()
+
+            if to_comment['type'] == 'master':
+                new_comment = Comment()
+                new_comment.user = user
+                new_comment.text = message
+                new_comment.to_report = report
+                new_comment.save()
+            elif to_comment['type'] == 'main':
+                new_comment = CommentReply()
+                new_comment.user = user
+                new_comment.text = message
+                new_comment.to_report = report
+                new_comment.reply_to = None
+                super_comment = Comment.objects.get(id=to_comment['value'])
+                new_comment.super_comment = super_comment
+                new_comment.save()
+            else:
+                new_comment = CommentReply()
+                new_comment.user = user
+                new_comment.text = message
+                new_comment.to_report = report
+                reply_to = CommentReply.objects.get(id=to_comment['value'])
+                super_comment = reply_to.super_comment
+                new_comment.reply_to = reply_to
+                new_comment.super_comment = super_comment
+                new_comment.save()
+
+            # return redirect(reverse("article", kwargs={'slug': slug}))
+            # else:
+            #     response = {
+            #         'email_status': False,
+            #     }
+            #     return HttpResponse(json.dumps(response), content_type='application/json')
+            # else:
+            #     # user not active
+            #     new_user = User()
+            #     new_user.true_name = fullname
+            #     new_user.email = email
+            #     new_user.website = website
+            #     random_pswd = gen_pswd(email)
+            #     new_user.password = make_password(random_pswd)
+            #     # new_user.email_status = False
+            #     new_user.save()
+            #
+            #     send_confirm_mail(request, new_user, random_pswd)
+            #     return redirect(reverse(
+            #         'email_send_status',
+            #         kwargs={
+            #             'uidb64': bytes.decode(urlsafe_base64_encode(force_bytes(new_user.pk))),
+            #             'status': 'success',
+            #         }
+            #     )
+            #     )
+
+        else:
+            pass
 
