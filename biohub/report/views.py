@@ -2,8 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse, Http404
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_text
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST, require_GET
+from django.views.decorators.http import require_POST, require_GET, require_http_methods
 from django.conf import settings
 import json
 from django.utils import timezone
@@ -47,6 +46,24 @@ def _assemble(o):
     for author in o.authors:
         d['author'].append(author.actualname)
     return json.dumps(d)
+
+
+def login_required(f):
+    """
+    This differs from the Django version: it reports the error instead of redirecting to login page.
+    """
+    def _decorated(request, *args, **kwargs):
+        user = request.user
+        if not user or not user.is_active:
+            return JsonResponse({
+                'meta': {
+                    'success': False,
+                    'message': 'Not logged in'
+                },
+                'data': None
+            })
+        return f(request, *args, **kwargs)
+    return _decorated
 
 
 def post_picture(request):
@@ -313,3 +330,30 @@ def update_report(request):
             'id': o.id
         }
     })
+
+
+@require_http_methods(['POST', 'GET'])
+@login_required
+def step(request):
+    if request.method == 'POST':
+        return get_steps(request)
+    elif request.method == 'GET':
+        return update_step(request)
+
+
+@require_http_methods(['POST', 'GET'])
+@login_required
+def subroutine(request):
+    if request.method == 'POST':
+        return get_subroutines(request)
+    elif request.method == 'GET':
+        return update_subroutine(request)
+
+
+@require_http_methods(['POST', 'GET'])
+@login_required
+def report(request):
+    if request.method == 'POST':
+        return get_reports(request)
+    elif request.method == 'GET':
+        return update_report(request)
