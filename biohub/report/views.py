@@ -133,9 +133,18 @@ def get_subroutines(request):
 
 
 @require_GET
+@login_required
 def get_subroutine(request, id):
     try:
         subr = SubRoutine.objects.get(id=id)
+        if subr.user != request.user:
+            return JsonResponse({
+                'meta': {
+                    'success': False,
+                    'message': 'Bug: This step does not belong to this user'
+                },
+                'data': []
+            })
         return JsonResponse({
             'meta': {
                 'success': True,
@@ -166,9 +175,18 @@ def get_steps(request):
 
 
 @require_GET
+@login_required
 def get_report(request, id):
     try:
         report = Step.objects.get(id=id)
+        if request.user not in report.authors:
+            return JsonResponse({
+                'meta': {
+                    'success': False,
+                    'message': 'This step does not belong to this user'
+                },
+                'data': []
+            })
         return JsonResponse({
             'meta': {
                 'success': True,
@@ -185,7 +203,7 @@ def get_report(request, id):
 @require_GET
 @login_required
 def get_reports(request):
-    reports = Report.objects.filter(user=request.user)
+    reports = request.user.reports
     return JsonResponse({
         'meta': {
             'success': True,
@@ -204,6 +222,14 @@ def update_step(request):
     d = json.loads(content_json)
     try:
         o = Step.objects.get(id=d['id'])
+        if o.user != request.user:
+            return JsonResponse({
+                'meta': {
+                    'success': False,
+                    'message': 'Bug: This step does not belong to this user'
+                },
+                'data': []
+            })
         o.content_json = content_json
     except KeyError:
         o = Step.objects.create(user=request.user, content_json=content_json)
@@ -226,6 +252,14 @@ def update_subroutine(request):
     d = json.loads(content_json)
     try:
         o = SubRoutine.objects.get(id=d['id'])
+        if o.user != request.user:
+            return JsonResponse({
+                'meta': {
+                    'success': False,
+                    'message': 'Bug: This step does not belong to this user.'
+                },
+                'data': []
+            })
         o.content_json = content_json
     except KeyError:
         o = SubRoutine.objects.create(user=request.user, content_json=content_json)
@@ -248,6 +282,14 @@ def update_report(request):
     d = json.loads(full_json)
     try:
         o = Report.objects.get(id=d['id'])
+        if o.user != request.user:
+            return JsonResponse({
+                'meta': {
+                    'success': False,
+                    'message': 'Bug: This step does not belong to this user'
+                },
+                'data': []
+            })
     except KeyError:
         o = Report.objects.create(id=d['id'], user=request.user)
     o.title = d.get('title', 'Untitled')
