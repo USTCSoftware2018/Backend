@@ -35,7 +35,7 @@ urlpatterns = [
 
     # report's routing
     path('editor/pic/', report_views.post_picture, name='post_picture'),
-    path('editor/step/<int:report_id>', report_views.get_steps, name='get_steps'),
+    #path('editor/step/<int:report_id>', report_views.get_steps, name='get_steps'),
 ]
 
 # 部署的时候需要指定static_url 和 media_url
