@@ -39,10 +39,13 @@ def _assemble(o):
         'ntime': o.ntime,
         'mtime': o.mtime,
         'result': o.result,
-        'subroutines': []
+        'subroutines': [],
+        'author': []
     }
     for subr in o.subroutines:
         d['subroutines'].append(json.loads(subr))
+    for author in o.authors:
+        d['author'].append(author.actualname)
     return json.dumps(d)
 
 
