@@ -25,11 +25,19 @@ class StepViewSet(ModelViewSet):
     serializer_class = StepSerializer
     permission_classes = (IsAuthenticated, IsOwnerOrReadOnly)
 
+    def get_queryset(self):
+        user = self.request.user
+        return Step.objects.filter(user=user)
+
 
 class SubRoutineViewSet(ModelViewSet):
     queryset = SubRoutine.objects.all()
     serializer_class = SubRoutineSerializer
     permission_classes = (IsAuthenticated, IsOwnerOrReadOnly)
+
+    def get_queryset(self):
+        user = self.request.user
+        return SubRoutine.objects.filter(user=user)
 
 
 class ReportViewSet(ModelViewSet):

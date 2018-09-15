@@ -31,12 +31,16 @@ class ReportSerializer(serializers.ModelSerializer):
 
 
 class StepSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
     class Meta:
         model = Step
         fields = ('id', 'user', 'content_json', 'yield_method')
 
 
 class SubRoutineSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
     class Meta:
         model = SubRoutine
         fields = ('id', 'user', 'content_json', 'yield_method')
