@@ -82,3 +82,10 @@
   | /subroutine/<id> | ID 为 <id> 的 subroutine |
   | /report          | 所有用户的所有 report    |
   | /report/<id>     | ID 为 <id> 的 report     |
+
+  响应为相应 HTTP status，例如：
+
+  | 状态码 | 含义       | 返回值                      |
+  |--------+------------+-----------------------------|
+  |    201 | 资源已创建 | 所创建资源本身              |
+  |    404 | 找不到资源 | json: detail 为具体错误信息 |
