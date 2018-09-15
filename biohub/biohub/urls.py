@@ -24,7 +24,7 @@ import report.views as report_views
 
 router = DefaultRouter()
 
-# differnt apps' urls separate with space.
+# different apps' urls separate with space.
 urlpatterns = [
     path('admin/', admin.site.urls),
     url(r'^api/', include(router.urls)),
@@ -34,12 +34,9 @@ urlpatterns = [
     # path('users/<int:id>/', user_views.get_users, name='get_users'),
 
     # report's routing
+    # FIXME: this should merge with /api router.
     path('editor/pic/', report_views.post_picture, name='post_picture'),
-    path('editor/step', report_views.step),
-    path('editor/subroutine', report_views.subroutine),
-    path('editor/report', report_views.report),
-    path('editor/subroutine/<int:id>', report_views.get_subroutine),
-    path('editor/report/<int:id>', report_views.get_report)
+    url(r'^editor/', include('report.urls'))
 ]
 
 # 部署的时候需要指定static_url 和 media_url

@@ -14,62 +14,28 @@ from.models import Report, Comment, CommentReply
 from django.contrib import auth
 from django.core import serializers
 
-
-# Create your views here.
-
-
-def _merge_id(j, id):
-    """
-    add/update an 'id' field to a json document
-    :param j: a json object
-    :param id: id field to be added
-    :return: a new json object
-    """
-    d = json.loads(j)
-    d['id'] = id
-    return json.dumps(d)
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.permissions import IsAuthenticated
+from .serializers import StepSerializer, SubRoutineSerializer, ReportSerializer
+from .permissions import IsOwnerOrReadOnly, IsAuthorOrReadyOnly
 
 
-def _assemble(o):
-    """
-    Assemble a Report object into one json document.
-    This object must be a valid object stored in the database.
-    :param o: a Report object
-    :return: a json document
-    """
-    d = {
-        'id': o.id,
-        'title': o.title,
-        'introduction': o.introduction,
-        'ntime': o.ntime,
-        'mtime': o.mtime,
-        'result': o.result,
-        'subroutines': [],
-        'author': []
-    }
-    for subr in o.subroutines:
-        d['subroutines'].append(json.loads(subr))
-    for author in o.authors:
-        d['author'].append(author.actualname)
-    return json.dumps(d)
+class StepViewSet(ModelViewSet):
+    queryset = Step.objects.all()
+    serializer_class = StepSerializer
+    permission_classes = (IsAuthenticated, IsOwnerOrReadOnly)
 
 
-def login_required(f):
-    """
-    This differs from the Django version: it reports the error instead of redirecting to login page.
-    """
-    def _decorated(request, *args, **kwargs):
-        user = request.user
-        if not user or not user.is_active:
-            return JsonResponse({
-                'meta': {
-                    'success': False,
-                    'message': 'Not logged in'
-                },
-                'data': None
-            })
-        return f(request, *args, **kwargs)
-    return _decorated
+class SubRoutineViewSet(ModelViewSet):
+    queryset = SubRoutine.objects.all()
+    serializer_class = SubRoutineSerializer
+    permission_classes = (IsAuthenticated, IsOwnerOrReadOnly)
+
+
+class ReportViewSet(ModelViewSet):
+    queryset = Report.objects.all()
+    serializer_class = ReportSerializer
+    permission_classes = (IsAuthenticated, IsAuthorOrReadyOnly)
 
 
 def post_picture(request):
@@ -215,226 +181,3 @@ def comment_post(request):
 
         else:
             pass
-
-
-@require_GET
-@login_required
-def get_subroutines(request):
-    subroutines = SubRoutine.objects.filter(user=request.user)
-    reply = {
-        'meta': {
-            'success': True,
-            'message': 'Success'
-        },
-        'data': {
-            'subroutine': [_merge_id(subr.content_json, subr.id) for subr in subroutines]
-        }
-    }
-    return JsonResponse(reply)
-
-
-@require_GET
-@login_required
-def get_subroutine(request, id):
-    try:
-        subr = SubRoutine.objects.get(id=id)
-        if subr.user != request.user:
-            return JsonResponse({
-                'meta': {
-                    'success': False,
-                    'message': 'Bug: This step does not belong to this user'
-                },
-                'data': []
-            })
-        return JsonResponse({
-            'meta': {
-                'success': True,
-                'message': 'Success'
-            },
-            'data': {
-                'subroutine': _merge_id(subr.content_json, subr.id)
-            }
-        })
-    except SubRoutine.DoesNotExist:
-        return Http404()
-
-
-@require_GET
-@login_required
-def get_steps(request):
-    steps = Step.objects.filter(user=request.user)
-    reply = {
-        'meta': {
-            'success': True,
-            'message': 'Success'
-        },
-        'data': {
-            'step': [_merge_id(step.content_json, step.id) for step in steps]
-        }
-    }
-    return JsonResponse(reply)
-
-
-@require_GET
-@login_required
-def get_report(request, id):
-    try:
-        report = Step.objects.get(id=id)
-        if request.user not in report.authors:
-            return JsonResponse({
-                'meta': {
-                    'success': False,
-                    'message': 'This step does not belong to this user'
-                },
-                'data': []
-            })
-        return JsonResponse({
-            'meta': {
-                'success': True,
-                'message': 'Success'
-            },
-            'data': {
-                'report': _assemble(report)
-            }
-        })
-    except Report.DoesNotExist:
-        return Http404()
-
-
-@require_GET
-@login_required
-def get_reports(request):
-    reports = request.user.reports
-    return JsonResponse({
-        'meta': {
-            'success': True,
-            'message': 'Success'
-        },
-        'data': {
-            'report': [_assemble(report) for report in reports]
-        }
-    })
-
-
-@require_POST
-@login_required
-def update_step(request):
-    content_json = request.POST.body.decode()
-    d = json.loads(content_json)
-    try:
-        o = Step.objects.get(id=d['id'])
-        if o.user != request.user:
-            return JsonResponse({
-                'meta': {
-                    'success': False,
-                    'message': 'Bug: This step does not belong to this user'
-                },
-                'data': []
-            })
-        o.content_json = content_json
-    except KeyError:
-        o = Step.objects.create(user=request.user, content_json=content_json)
-    o.save()
-    return JsonResponse({
-        'meta': {
-            'success': True,
-            'message': 'Success'
-        },
-        'data': {
-            'id': o.id
-        }
-    })
-
-
-@require_POST
-@login_required
-def update_subroutine(request):
-    content_json = request.POST.body.decode()
-    d = json.loads(content_json)
-    try:
-        o = SubRoutine.objects.get(id=d['id'])
-        if o.user != request.user:
-            return JsonResponse({
-                'meta': {
-                    'success': False,
-                    'message': 'Bug: This step does not belong to this user.'
-                },
-                'data': []
-            })
-        o.content_json = content_json
-    except KeyError:
-        o = SubRoutine.objects.create(user=request.user, content_json=content_json)
-    o.save()
-    return JsonResponse({
-        'meta': {
-            'success': True,
-            'message': 'Success'
-        },
-        'data': {
-            'id': o.id
-        }
-    })
-
-
-@require_POST
-@login_required
-def update_report(request):
-    full_json = request.POST.body.decode()
-    d = json.loads(full_json)
-    try:
-        o = Report.objects.get(id=d['id'])
-        if o.user != request.user:
-            return JsonResponse({
-                'meta': {
-                    'success': False,
-                    'message': 'Bug: This step does not belong to this user'
-                },
-                'data': []
-            })
-    except KeyError:
-        o = Report.objects.create(id=d['id'], user=request.user)
-    o.title = d.get('title', 'Untitled')
-    o.introduction = d.get('introduction', '')
-    o.label = [Label.objects.get_or_create(label_name=label) for label in d.get('label', {})]
-    for k in ['ntime', 'mtime']:
-        if k in d:
-            setattr(o, k, d[k])
-    o.result = d.get('result', '')
-    o.subroutines = [json.dumps(subr) for subr in d.get('subroutines', {})]
-    o.save()
-    return JsonResponse({
-        'meta': {
-            'success': True,
-            'message': 'Success'
-        },
-        'data': {
-            'id': o.id
-        }
-    })
-
-
-@require_http_methods(['POST', 'GET'])
-@login_required
-def step(request):
-    if request.method == 'POST':
-        return get_steps(request)
-    elif request.method == 'GET':
-        return update_step(request)
-
-
-@require_http_methods(['POST', 'GET'])
-@login_required
-def subroutine(request):
-    if request.method == 'POST':
-        return get_subroutines(request)
-    elif request.method == 'GET':
-        return update_subroutine(request)
-
-
-@require_http_methods(['POST', 'GET'])
-@login_required
-def report(request):
-    if request.method == 'POST':
-        return get_reports(request)
-    elif request.method == 'GET':
-        return update_report(request)
