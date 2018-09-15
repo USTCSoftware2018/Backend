@@ -15,8 +15,8 @@ from django.contrib import auth
 from django.core import serializers
 
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.permissions import IsAuthenticated
 from .serializers import StepSerializer, SubRoutineSerializer, ReportSerializer
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from .permissions import IsOwnerOrReadOnly, IsAuthorOrReadyOnly
 
 
@@ -35,7 +35,7 @@ class SubRoutineViewSet(ModelViewSet):
 class ReportViewSet(ModelViewSet):
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
-    permission_classes = (IsAuthenticated, IsAuthorOrReadyOnly)
+    permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorOrReadyOnly)
 
 
 def post_picture(request):
