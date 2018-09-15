@@ -1,0 +1,84 @@
+#+TITLE: Report API docs
+#+AUTHOR: ksqsf
+
+本文档简单描述了 Report API 的设计和用法。
+
+* 资源类型与格式
+
+  Report API 用于操控 =report=, =subroutine=, =step= 等资源，这些资源
+  分别以 URL 表示为
+  + =/editor/report/=
+  + =/editor/subroutine/=
+  + =/editor/step/=
+
+
+  *注意* ：以下每种资源均有一个 ID，不再写出。
+
+
+** Report
+
+   Report 的最新定义参见 [[file:../biohub/report/models.py][模型文件]]。Report 格式如下：
+
+   | 字段         | 类型       | 备注                     |
+   |--------------+------------+--------------------------|
+   | title        | 字符串     | 最大长度为 256           |
+   | introduction | 文本       |                          |
+   | label        | Label 列表 | 每个 Label 最大长度为 64 |
+   | ntime        | 日期时间   |                          |
+   | mtime        | 日期时间   |                          |
+   | result       | 文本       |                          |
+   | subroutines  | json 文本  |                          |
+
+   一个典型的 JSON 响应如下：
+
+   #+BEGIN_SRC json
+     {
+	 "id": 1,
+	 "title": "title",
+	 "authors": ["mike", "john"],
+	 "introduction": "this is introduction",
+	 "label": ["test", "system"],
+	 "ntime": "2018-09-15T13:01:33.628129Z",
+	 "mtime": "2018-09-15T13:03:27.089470Z",
+	 "result": "positive",
+	 "subroutines": "{}"
+     }
+   #+END_SRC
+
+
+** Step
+
+   Step 的最新定义参见 [[file:../biohub/report/models.py][模型文件]] 。Step 格式如下：
+
+   | 字段         | 类型      | 备注 |
+   |--------------+-----------+------|
+   | user         | User      |      |
+   | content_json | json 文本 |      |
+   | yield_method | 文本      |      |
+
+** SubRoutine
+
+   SubRoutine 的最新定义参见 [[file:../biohub/report/models.py][模型文件]] 。SubRoutine 格式如下：
+
+   | 字段         | 类型      | 备注 |
+   |--------------+-----------+------|
+   | user         | User      |      |
+   | content_json | json 文本 |      |
+   | yield_method | 文本      |      |
+
+* API
+
+  step, subroutine, report 均支持 GET, POST, PUT, PATCH, OPTIONS 方法。
+  + GET 用于获取已有资源
+  + POST 和 PUT 用于创建新资源
+  + PATCH 用于更新资源
+  + OPTIONS 用于获取 API 信息
+
+  | API              | GET 返回                 |
+  |------------------+--------------------------|
+  | /step            | 当前用户所有 step        |
+  | /step/<id>       | ID 为 <id> 的 step       |
+  | /subroutine      | 当前用户所有 subroutine  |
+  | /subroutine/<id> | ID 为 <id> 的 subroutine |
+  | /report          | 所有用户的所有 report    |
+  | /report/<id>     | ID 为 <id> 的 report     |
