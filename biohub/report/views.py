@@ -160,32 +160,5 @@ def comment_post(request):
                 new_comment.super_comment = super_comment
                 new_comment.save()
 
-            # return redirect(reverse("article", kwargs={'slug': slug}))
-            # else:
-            #     response = {
-            #         'email_status': False,
-            #     }
-            #     return HttpResponse(json.dumps(response), content_type='application/json')
-            # else:
-            #     # user not active
-            #     new_user = User()
-            #     new_user.true_name = fullname
-            #     new_user.email = email
-            #     new_user.website = website
-            #     random_pswd = gen_pswd(email)
-            #     new_user.password = make_password(random_pswd)
-            #     # new_user.email_status = False
-            #     new_user.save()
-            #
-            #     send_confirm_mail(request, new_user, random_pswd)
-            #     return redirect(reverse(
-            #         'email_send_status',
-            #         kwargs={
-            #             'uidb64': bytes.decode(urlsafe_base64_encode(force_bytes(new_user.pk))),
-            #             'status': 'success',
-            #         }
-            #     )
-            #     )
-
         else:
             pass
