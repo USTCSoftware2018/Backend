@@ -12,7 +12,8 @@ class Report(models.Model):
     mtime = models.DateTimeField(auto_now=True)
     result = models.TextField()       # json
     subroutines = models.TextField()  # json
-    envs = models.TextField()         # json
+    envs = models.TextField(null=True)         # json
+    html = models.TextField()         # html
 
     # See comments in Comment model!
     # See praises(likes in the doc) in User model
