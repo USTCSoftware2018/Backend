@@ -123,65 +123,113 @@ def post_picture(request):
         return response
 
 
-def comment_post(request):
-    '''
-    This is comment_post upload function, request need a json in the body. Return a json.
+# def comment_post(request):
+#     """
+#     This is comment_post upload function, request need a json in the body. Return a json. Second ranks!
+#     :param request:
+#                 body = {
+#                     'to_report': 366,  # report id
+#                     'message': "I find it funny",  # comment body
+#                     'to_comment': {
+#                     'type': 'master',  # One of "master", "main", "else"
+#                     'value': -1,  # One of -1(if master), super_comment's id(if main), the_comment_you_reply's id(if else)
+#                 }
+#             }
+#     :return:
+#     """
+#
+#     body = {
+#         'to_report': 366,  # report id
+#         'message': "I find it funny",  # comment body
+#         'to_comment': {
+#             'type': 'master',  # One of "master", "main", "else"
+#             'value': -1,  # One of -1(if master), super_comment's id(if main), the_comment_you_reply's id(if else)
+#         }
+#     }
+#     if request.method == 'POST':
+#         comment_json = request.POST.body.decode()
+#         comment = json.loads(comment_json)
+#         # comment_json = request.POST.get('comment', '')
+#         # comment = json.loads(comment_json)
+#         report_pk = comment['to_report']
+#         report = Report.objects.get(pk=report_pk)
+#         user = request.user
+#         message = comment['message']  # message
+#         to_comment = comment['to_comment']  # comment_pk
+#         # to_comment = json.loads(to_comment)
+#
+#         if user is not None and user.is_active:
+#
+#             if to_comment['type'] == 'master':
+#                 new_comment = Comment()
+#                 new_comment.user = user
+#                 new_comment.text = message
+#                 new_comment.to_report = report
+#                 new_comment.save()
+#             elif to_comment['type'] == 'main':
+#                 new_comment = CommentReply()
+#                 new_comment.user = user
+#                 new_comment.text = message
+#                 new_comment.to_report = report
+#                 new_comment.reply_to = None
+#                 super_comment = Comment.objects.get(id=to_comment['value'])
+#                 new_comment.super_comment = super_comment
+#                 new_comment.save()
+#             else:
+#                 new_comment = CommentReply()
+#                 new_comment.user = user
+#                 new_comment.text = message
+#                 new_comment.to_report = report
+#                 reply_to = CommentReply.objects.get(id=to_comment['value'])
+#                 super_comment = reply_to.super_comment
+#                 new_comment.reply_to = reply_to
+#                 new_comment.super_comment = super_comment
+#                 new_comment.save()
+#
+#         else:
+#             pass
+
+
+def comment_post_single(request):
+    """
+    This is for single ranked comment.
     :param request:
     :return:
-    '''
+    """
 
-    a = {
+    body = {
         'to_report': 366,  # report id
         'message': "I find it funny",  # comment body
-        'to_comment': {
-            'type': 'master',  # One of "master", "main", "else"
-            'value': -1,  # One of -1(if master), super_comment's id(if main), the_comment_you_reply's id(if else)
-        }
+        'to_comment': 32,  # comment id, "to_comment" = -1 if don't have superior one
     }
+
     if request.method == 'POST':
         comment_json = request.POST.body.decode()
         comment = json.loads(comment_json)
-        # comment_json = request.POST.get('comment', '')
-        # comment = json.loads(comment_json)
         report_pk = comment['to_report']
         report = Report.objects.get(pk=report_pk)
         user = request.user
         message = comment['message']  # message
         to_comment = comment['to_comment']  # comment_pk
-        # to_comment = json.loads(to_comment)
 
         if user is not None and user.is_active:
-            # if user.email_status is Trgit ue:
-            # auth.login(request, user)
 
-            # user.login_times += 1
-            # user.save()
-
-            if to_comment['type'] == 'master':
+            if to_comment == -1:
                 new_comment = Comment()
                 new_comment.user = user
                 new_comment.text = message
                 new_comment.to_report = report
                 new_comment.save()
-            elif to_comment['type'] == 'main':
-                new_comment = CommentReply()
-                new_comment.user = user
-                new_comment.text = message
-                new_comment.to_report = report
-                new_comment.reply_to = None
-                super_comment = Comment.objects.get(id=to_comment['value'])
-                new_comment.super_comment = super_comment
-                new_comment.save()
+
             else:
                 new_comment = CommentReply()
                 new_comment.user = user
                 new_comment.text = message
                 new_comment.to_report = report
-                reply_to = CommentReply.objects.get(id=to_comment['value'])
-                super_comment = reply_to.super_comment
-                new_comment.reply_to = reply_to
-                new_comment.super_comment = super_comment
+                new_comment.reply_to = Comment.objects.get(pk=to_comment)
                 new_comment.save()
 
         else:
             pass
+    else:
+        pass

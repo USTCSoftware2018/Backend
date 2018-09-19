@@ -40,19 +40,19 @@ class Comment(models.Model):
     time = models.DateTimeField(auto_now=True)
     to_report = models.ForeignKey(Report, on_delete=models.CASCADE, db_index=True, related_name='comments')
 
-    @property
-    def all_sub_comments(self):
-        return self.sub_comments.all().order_by('time')
+    # @property
+    # def all_sub_comments(self):
+    #     return self.sub_comments.all().order_by('time')
 
     def __str__(self):
         return '{}, {}'.format(self.user, self.text)
 
 
 class CommentReply(Comment):
-    reply_to = models.OneToOneField('self', on_delete=models.CASCADE, default=None, blank=True, null=True,
+    reply_to = models.OneToOneField(Comment, on_delete=models.CASCADE, default=None, blank=True, null=True,
                                     related_name='replied_by')
-    super_comment = models.ForeignKey(Comment, on_delete=models.CASCADE, default=None, blank=True, null=True,
-                                      related_name='sub_comments')
+    # super_comment = models.ForeignKey(Comment, on_delete=models.CASCADE, default=None, blank=True, null=True,
+    #                                   related_name='sub_comments')
 
 
 class Step(models.Model):
