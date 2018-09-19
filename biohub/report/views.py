@@ -18,6 +18,8 @@ from rest_framework.viewsets import ModelViewSet
 from .serializers import StepSerializer, SubRoutineSerializer, ReportSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from .permissions import IsOwnerOrReadOnly, IsAuthorOrReadyOnly
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 
 class StepViewSet(ModelViewSet):
@@ -44,6 +46,11 @@ class ReportViewSet(ModelViewSet):
     queryset = Report.objects.all()
     serializer_class = ReportSerializer
     permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorOrReadyOnly)
+
+    @action(detail=True)
+    def html(self, request, *args, **kwargs):
+        report = self.get_object()
+        return Response(report.html)
 
 
 def post_picture(request):
