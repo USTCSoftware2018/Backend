@@ -117,9 +117,25 @@ def post_picture(request):
 
 
 def comment_post(request):
+    '''
+    This is comment_post upload function, request need a json in the body. Return a json.
+    :param request:
+    :return:
+    '''
+
+    a = {
+        'to_report': 366,  # report id
+        'message': "I find it funny",  # comment body
+        'to_comment': {
+            'type': 'master',  # One of "master", "main", "else"
+            'value': -1,  # One of -1(if master), super_comment's id(if main), the_comment_you_reply's id(if else)
+        }
+    }
     if request.method == 'POST':
-        comment_json = request.POST.get('comment', '')
+        comment_json = request.POST.body.decode()
         comment = json.loads(comment_json)
+        # comment_json = request.POST.get('comment', '')
+        # comment = json.loads(comment_json)
         report_pk = comment['to_report']
         report = Report.objects.get(pk=report_pk)
         user = request.user
