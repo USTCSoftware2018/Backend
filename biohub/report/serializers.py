@@ -27,7 +27,7 @@ class ReportSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Report
-        fields = ('id', 'title', 'authors', 'introduction', 'label', 'ntime', 'mtime', 'result', 'subroutines')
+        fields = ('id', 'title', 'envs', 'authors', 'introduction', 'label', 'ntime', 'mtime', 'result', 'subroutines')
 
 
 class StepSerializer(serializers.ModelSerializer):

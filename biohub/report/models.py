@@ -10,8 +10,9 @@ class Report(models.Model):
     label = models.ManyToManyField('Label', related_name='reports_related')
     ntime = models.DateTimeField(auto_now_add=True)
     mtime = models.DateTimeField(auto_now=True)
-    result = models.TextField()
+    result = models.TextField()       # json
     subroutines = models.TextField()  # json
+    envs = models.TextField()         # json
 
     # See comments in Comment model!
     # See praises(likes in the doc) in User model
