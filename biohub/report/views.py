@@ -18,7 +18,6 @@ from rest_framework.viewsets import ModelViewSet
 from .serializers import StepSerializer, SubRoutineSerializer, ReportSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from .permissions import IsOwnerOrReadOnly, IsAuthorOrReadyOnly
-from rest_framework.decorators import action
 from rest_framework.response import Response
 
 
@@ -47,10 +46,34 @@ class ReportViewSet(ModelViewSet):
     serializer_class = ReportSerializer
     permission_classes = (IsAuthenticatedOrReadOnly, IsAuthorOrReadyOnly)
 
-    @action(detail=True)
-    def html(self, request, *args, **kwargs):
-        report = self.get_object()
-        return Response(report.html)
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_authenticated:
+            return Report.objects.filter(authors=user)
+        else:
+            return Report.objects.all()
+
+
+@require_http_methods(['POST', 'GET', 'DELETE'])
+def report_html(request, id):
+    user = request.user
+    try:
+        report = Report.objects.get(id=id)
+    except Report.DoesNotExist:
+        return Http404()
+
+    if request.method == 'GET':
+        return HttpResponse(report.html)
+    elif request.method == 'POST':
+        if not user or not user.is_authenticated or user not in report.authors:
+            return Http404()
+        report.html = request.data
+        return HttpResponse()
+    elif request.method == 'DELETE':
+        if not user or not user.is_authenticated or user not in report.authors:
+            return Http404()
+        report.html = ""
+        return HttpResponse()
 
 
 def post_picture(request):
